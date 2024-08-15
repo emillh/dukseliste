@@ -2,12 +2,6 @@ import pandas as pd
 import openpyxl
 from openpyxl import Workbook
 
-'''
-This script is used to generate a chore list for students.
-The list is based on the number of times a student has done a chore.
-The students are then sorted by the number of times they've done a chore,
-and the student with the least amount of chores is assigned a chore.
-'''
 class Student:
     def __init__(self, name:str):
         self.name = name
@@ -15,7 +9,6 @@ class Student:
         self.trash = 0
         self.table = 0
         self.total = 0
-        #self.last_chore = None
         self.last_week = False
     
     def add_sweep(self):
@@ -47,18 +40,9 @@ class Student:
         return self.last_week
 
 def generate_week(students: list) -> list:
-    '''
-    Generate a week of chores for the students.
-    The students are sorted by the number of chores they've done,
-    and the student with the least amount of chores is assigned a chore.
-    Students should not be assigned a chore they have already done.
-    '''
-
     week = [None] * 6
-    #students.sort(key=lambda x: x.total)
 
     students.sort(key=lambda x: x.sweep + x.total)
-    # Assign 2 students to be sweepers
     for student in students:
         if week[0] is None and student not in week and student.get_last_week() is False:
             week[0] = student
@@ -108,22 +92,13 @@ def generate_week(students: list) -> list:
     week[4].add_table()
     week[5].add_table()
 
-    print(week)
     return week
 
 def generate_sheet(students: list, weeks: int) -> None:
-    '''
-    Generate a sheet with the chores for the students.
-    The sheet is generated for the number of weeks specified.
-    '''
-
-    # Create a new workbook
     new_workbook = Workbook()
 
-    # Create a new sheet in the workbook
     new_sheet = new_workbook.active
 
-    # Set the headers of the sheet
     new_sheet.cell(row=1, column=1, value="Uge")
     new_sheet.cell(row=1, column=2, value="Pligt 1 - Feje")
     new_sheet.cell(row=1, column=3, value="Pligt 2 - Feje")
@@ -132,7 +107,6 @@ def generate_sheet(students: list, weeks: int) -> None:
     new_sheet.cell(row=1, column=6, value="Pligt 5 - Tørre borde")
     new_sheet.cell(row=1, column=7, value="Pligt 6 - Tørre borde")
 
-    # Generate the weeks
     for week in range(1, weeks + 1):
         chores = generate_week(students)
         for col, chore in enumerate(chores, start=2):
@@ -140,22 +114,17 @@ def generate_sheet(students: list, weeks: int) -> None:
 
     new_workbook.save("dukseliste.xlsx")
 
-# Load exceldocument with the names of the students
-workbook = openpyxl.load_workbook("elever.xlsx")
+if __name__ == "__main__":
+    workbook = openpyxl.load_workbook("elever.xlsx")
 
-# Access the first sheet of the workbook
-first_sheet = workbook[workbook.sheetnames[0]]
+    first_sheet = workbook[workbook.sheetnames[0]]
 
-# Create a list with the names of the students,
-# and set the number of times they've done a chore to 0
-students = []
-for row in first_sheet.iter_rows(min_row=1, max_row=first_sheet.max_row, min_col=1, max_col=2, values_only=True):
-    name, _ = row
-    new_student = Student(name)
-    students.append(new_student)
+    students = []
+    for row in first_sheet.iter_rows(min_row=1, max_row=first_sheet.max_row, min_col=1, max_col=2, values_only=True):
+        name, _ = row
+        new_student = Student(name)
+        students.append(new_student)
 
-# Number of weeks they're in school,
-# this is used to generate how many weeks to generate
-school_weeks = 40
+    school_weeks = 40
 
-generate_sheet(students, school_weeks)
+    generate_sheet(students, school_weeks)
